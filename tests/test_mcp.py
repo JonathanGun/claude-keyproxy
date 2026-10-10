@@ -39,8 +39,9 @@ class McpTest(unittest.TestCase):
         self.assertIn("tools", init["capabilities"])
         self.assertIsNone(mcp.handle(self.api, {"jsonrpc": "2.0", "method": "notifications/initialized"}))
         names = [t["name"] for t in self.rpc("tools/list")["result"]["tools"]]
-        self.assertEqual(names, ["list_keys", "add_key", "replace_token", "delete_key", "reorder_keys",
-                                 "reset_cooldowns", "start_sign_in", "finish_sign_in", "cancel_sign_in"])
+        self.assertEqual(names, ["list_keys", "add_key", "replace_token", "delete_key", "set_key_disabled",
+                                 "reorder_keys", "reset_cooldowns", "start_sign_in", "finish_sign_in",
+                                 "cancel_sign_in"])
         self.assertEqual(self.rpc("nope")["error"]["code"], -32601)
 
     def test_manages_keys_without_ever_returning_a_token(self):
@@ -49,6 +50,8 @@ class McpTest(unittest.TestCase):
         self.assertFalse(error)
         self.assertEqual([(k["name"], k["last4"]) for k in keys], [("work", "1111"), ("personal", "2222")])
 
+        keys, _ = self.tool("set_key_disabled", name="work", disabled=True)
+        self.assertEqual([k["disabled"] for k in keys], [True, False])
         self.tool("reorder_keys", order=["personal", "work"])
         self.tool("replace_token", name="work", token="sk-ant-oat01-testtesttest3333")
         self.tool("delete_key", name="personal")

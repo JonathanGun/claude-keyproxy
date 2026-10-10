@@ -79,13 +79,14 @@ document.addEventListener("alpine:init", () => {
       try { await fn(); } catch (err) { this.say(err.message); }
     },
 
-    // the key the proxy picks next: the first by priority with a token that is not cooling down
+    // the key the proxy picks next: the first by priority that is on, has a token and is not cooling down
     get current() {
       if (!this.cooldown) return null;
-      return this.keys.find((k) => k.last4 && !this.cooldown[k.name])?.name ?? null;
+      return this.keys.find((k) => k.last4 && !k.disabled && !this.cooldown[k.name])?.name ?? null;
     },
 
     state(k) {
+      if (k.disabled) return { text: "disabled", cls: "off" };
       if (!k.last4) return { text: "key file missing", cls: "missing" };
       const left = this.cooldown?.[k.name];
       if (left) {  // a cooldown also follows a rejected token, which is not a rate limit
@@ -256,6 +257,12 @@ document.addEventListener("alpine:init", () => {
       await call("POST", "/cache/reset", {});
       this.$refs.dlg.close();
       await this.poll();
+    },
+
+    async toggle(k) {
+      await this.attempt(async () => {
+        this.keys = await call("PUT", `/keys/${encodeURIComponent(k.name)}/disabled`, { disabled: !k.disabled });
+      });
     },
 
     async move(from, to, focus) {

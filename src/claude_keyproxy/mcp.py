@@ -1,4 +1,4 @@
-"""An MCP server, so an agent can manage the keys: list, add, replace, delete, reorder, reset.
+"""An MCP server, so an agent can manage the keys: list, add, replace, delete, disable, reorder, reset.
 
     claude mcp add keyproxy -- keyproxy-mcp
 
@@ -102,6 +102,13 @@ def replace_token(api: Api, args: Json) -> Any:
       {"name": NAME}, ("name",))
 def delete_key(api: Api, args: Json) -> Any:
     return api.call("DELETE", f"/keys/{quote(str(args['name']), safe='')}")
+
+
+@tool("set_key_disabled", "Turn a key off, so the proxy skips it until it is turned back on, or turn it back on.",
+      {"name": NAME, "disabled": {"type": "boolean", "description": "true to turn the key off, false to turn it on"}},
+      ("name", "disabled"))
+def set_key_disabled(api: Api, args: Json) -> Any:
+    return api.call("PUT", f"/keys/{quote(str(args['name']), safe='')}/disabled", {"disabled": args.get("disabled")})
 
 
 @tool("reorder_keys", "Set the priority order. The first name is tried first. List every key exactly once.",

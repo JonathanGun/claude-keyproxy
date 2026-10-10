@@ -19,6 +19,7 @@ It manages several Claude subscriptions for Claude Code. When one subscription h
 
 - **Automatic failover.** When a key hits its limit, the same request moves to the next key in the same session.
 - **Key manager page.** Add a key by signing in with Claude in the browser, without a terminal.
+- **Turn a key off.** The proxy skips a disabled key until you turn it back on.
 - **Usage at a glance.** See the 5-hour and weekly usage of each key, and which key is in use.
 - **Agent tools.** An MCP server lets an agent manage the keys for you.
 - **Zero dependencies.** Python standard library only.
@@ -98,7 +99,7 @@ claude() { keyproxy-up && command claude "$@"; }
 
 ## MCP Integration
 
-Claude keyproxy comes with MCP server named `keyproxy-mcp`. Add it to Claude Code, and an agent can list, add, reorder and delete keys, and reset the cooldowns:
+Claude keyproxy comes with MCP server named `keyproxy-mcp`. Add it to Claude Code, and an agent can list, add, reorder, disable and delete keys, and reset the cooldowns:
 
 ```bash
 claude mcp add keyproxy -- keyproxy-mcp

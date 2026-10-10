@@ -118,6 +118,7 @@ Served by the proxy itself, from `src/manager.py`, on 127.0.0.1:18787. `--headle
 | `PUT /_keyproxy/api/keys/<name>` `{"token"}` | replaces that key's token |
 | `DELETE /_keyproxy/api/keys/<name>` | deletes the key and its token file |
 | `POST /_keyproxy/api/keys/<name>/open` `{}` | opens the token file in the default text editor. The token never comes back through the API |
+| `PUT /_keyproxy/api/keys/<name>/disabled` `{"disabled"}` | turns the key off, so the proxy skips it, or back on. Saved in `index.json` |
 | `POST /_keyproxy/api/setup/start` `{"name","replace"}` | runs `claude setup-token` and returns the sign-in link |
 | `POST /_keyproxy/api/setup/finish` `{"id","code"}` | gives the code to `claude` and saves the token it returns |
 | `POST /_keyproxy/api/setup/cancel` `{"id"}` | stops a sign-in |

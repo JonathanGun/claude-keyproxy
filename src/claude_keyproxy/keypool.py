@@ -103,7 +103,7 @@ class KeyPool:
         self.usage: dict[str, Usage] = {}  # key name -> parse_usage() of its last response, plus "seen"
 
     def load(self) -> list[Key]:
-        """Every key with a readable token file. Re-read on every request so edits apply at once."""
+        """Every enabled key with a readable token file. Re-read on every request so edits apply at once."""
         try:
             with open(self.index) as f:
                 entries = json.load(f)["keys"]
@@ -111,6 +111,8 @@ class KeyPool:
             return []
         keys: list[Key] = []
         for entry in entries:
+            if entry.get("disabled"):  # turned off on the page until it is turned back on
+                continue
             try:
                 with open(os.path.expanduser(entry["path"])) as f:
                     keys.append(Key(entry["name"], "".join(f.read().split()), entry["priority"]))

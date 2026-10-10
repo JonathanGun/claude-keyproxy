@@ -6,6 +6,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 
 ### Added
 
+- **Turn a key off** with the power button on its row, or the `set_key_disabled` MCP tool. The proxy skips it until it is turned back on, across restarts too.
 - **Check usage of all keys**, in a menu next to the refresh button. It sends a 1-token request with every key to read its usage, after a confirmation.
 - A "near the limit" chip when Anthropic warns that a key is close to its limit. A cooling key shows "rate limited" and the time left as two chips.
 - The page works on narrow screens. Each key folds into one line with its usage, and reordering works by touch.

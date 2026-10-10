@@ -12,6 +12,8 @@ PUT    /_keyproxy/api/keys/<name>    {"token"} replaces that key's token
 DELETE /_keyproxy/api/keys/<name>    removes that key from the index and deletes its token file
 POST   /_keyproxy/api/keys/<name>/open  opens the token file in the default text editor. The token itself
                                      never passes through the API.
+PUT    /_keyproxy/api/keys/<name>/disabled  {"disabled": bool} turns the key off or back on. The proxy
+                                     skips a disabled key until it is turned back on.
 PUT    /_keyproxy/api/order          {"order": [names]} sets priority 1..n in that order
 GET    /_keyproxy/api/cache          the cooldowns, {name: seconds left}
 POST   /_keyproxy/api/cache/reset    clears the cooldowns and the usage seen
@@ -156,7 +158,7 @@ class Keys:
             except OSError:
                 token = None
             out.append({"name": k["name"], "priority": k["priority"],
-                        "last4": token and token[-4:],
+                        "last4": token and token[-4:], "disabled": bool(k.get("disabled")),
                         "api_key": bool(token and token.startswith("sk-ant-api"))})
         return out
 
@@ -204,6 +206,18 @@ class Keys:
         self.save(data)  # index first, so the proxy never picks a key whose file is gone
         with contextlib.suppress(FileNotFoundError):
             os.unlink(os.path.expanduser(entry["path"]))
+
+    @locked
+    def set_disabled(self, name: str, disabled: bool) -> None:
+        data = self.read()
+        entry = next((k for k in data["keys"] if k["name"] == name), None)
+        if entry is None:
+            raise NotFound(f"no key named {name}")
+        if disabled:
+            entry["disabled"] = True
+        else:
+            entry.pop("disabled", None)
+        self.save(data)
 
     @locked
     def order(self, names: list[str]) -> None:
@@ -327,6 +341,14 @@ def delete_key(server: ProxyServer, _body: None, name: str) -> list[Json]:
 def open_token_file(server: ProxyServer, _body: Json, name: str) -> Json:
     server.keys.open(name)
     return {}
+
+
+@api.route("PUT", f"{API}/keys/<name>/disabled")
+def set_disabled(server: ProxyServer, body: Json, name: str) -> list[Json]:
+    if not isinstance(body.get("disabled"), bool):
+        raise BadRequest("disabled must be true or false")
+    server.keys.set_disabled(name, body["disabled"])
+    return server.keys.all()
 
 
 @api.route("PUT", f"{API}/order")

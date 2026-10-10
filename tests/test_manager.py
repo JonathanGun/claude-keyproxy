@@ -155,7 +155,8 @@ class ManagerTest(unittest.TestCase):
 
     def test_add_replace_and_reorder(self):
         status, keys = self.call("GET", "/_keyproxy/api/keys")
-        self.assertEqual(keys, [{"name": "work", "priority": 1, "last4": "1111", "api_key": False}])
+        self.assertEqual(keys, [{"name": "work", "priority": 1, "last4": "1111", "disabled": False,
+                                 "api_key": False}])
         self.assertNotIn("token-work", json.dumps(keys))
 
         status, keys = self.call("POST", "/_keyproxy/api/keys", {"name": "personal", "token": "token-personal-2222"})
@@ -206,9 +207,22 @@ class ManagerTest(unittest.TestCase):
         self.assertEqual(self.call("DELETE", "/_keyproxy/api/keys/work", headers=evil)[0], 403)
         status, keys = self.call("DELETE", "/_keyproxy/api/keys/work")
         self.assertEqual((status, keys), (200, [{"name": "personal", "priority": 1, "last4": "2222",
-                                                 "api_key": False}]))
+                                                 "disabled": False, "api_key": False}]))
         self.assertFalse(os.path.exists(self.work))
         self.assertEqual(self.call("DELETE", "/_keyproxy/api/keys/work")[0], 404)
+
+    def test_disable_skips_the_key_until_it_is_turned_back_on(self):
+        self.assertEqual([k.name for k in self.server.pool.load()], ["work"])
+        status, keys = self.call("PUT", "/_keyproxy/api/keys/work/disabled", {"disabled": True})
+        self.assertEqual((status, keys[0]["disabled"]), (200, True))
+        self.assertEqual(self.server.pool.load(), [])
+        status, keys = self.call("PUT", "/_keyproxy/api/keys/work/disabled", {"disabled": False})
+        self.assertEqual((status, keys[0]["disabled"]), (200, False))
+        self.assertEqual([k.name for k in self.server.pool.load()], ["work"])
+        with open(self.index) as f:
+            self.assertNotIn("disabled", json.load(f)["keys"][0])
+        self.assertEqual(self.call("PUT", "/_keyproxy/api/keys/nope/disabled", {"disabled": True})[0], 404)
+        self.assertEqual(self.call("PUT", "/_keyproxy/api/keys/work/disabled", {"disabled": "yes"})[0], 400)
 
     def test_rejects_bad_input(self):
         self.assertEqual(self.call("POST", "/_keyproxy/api/keys", {"name": "../x", "token": "token-abcdefgh"})[0], 400)

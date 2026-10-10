@@ -59,6 +59,7 @@ li.dragging { opacity: 0.5; }
 .state.cool { --tone: var(--warn); }
 .state.missing, .state.limited { --tone: var(--pico-del-color); }
 .state.near { --tone: var(--warn); }
+.keys li.off :is(.name, .usage) { opacity: 0.5; }  /* a disabled key, skipped by the proxy */
 .chips { display: flex; gap: 0.35rem; }
 .actions { margin-left: auto; display: flex; gap: 0.35rem; }
 
