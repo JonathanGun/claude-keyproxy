@@ -88,9 +88,12 @@ document.addEventListener("alpine:init", () => {
     state(k) {
       if (!k.last4) return { text: "key file missing", cls: "missing" };
       const left = this.cooldown?.[k.name];
-      if (left) return { text: `cooling down, ${duration(left)} left`, cls: "cool" };
+      if (left) {  // a cooldown also follows a rejected token, which is not a rate limit
+        const limited = this.usage?.[k.name]?.status === "rejected";
+        return limited ? { text: "rate limited", cls: "limited" } : { text: "cooling down", cls: "cool" };
+      }
       if (k.name === this.current) return { text: "in use", cls: "current" };
-      return { text: this.cooldown ? "ready" : "", cls: "" };
+      return { text: this.cooldown ? "ready" : "", cls: "ready" };
     },
 
     quota(k) {
@@ -111,13 +114,19 @@ document.addEventListener("alpine:init", () => {
       return { bars, note: "" };
     },
 
-    // Anthropic's status for the key, a second chip. allowed_warning: past one of its warning thresholds.
-    // A rejected key that is cooling down already says so.
-    limit(k) {
-      const status = this.usage?.[k.name]?.status;
-      if (status === "allowed_warning") return { text: "near the limit", cls: "near" };
-      if (status === "rejected" && !this.cooldown?.[k.name]) return { text: "rate limited", cls: "limited" };
-      return { text: "", cls: "" };
+    // the chips after a key's name: its state, Anthropic's warning, and the time until its limit resets
+    chips(k) {
+      const out = [this.state(k)];
+      if (this.usage?.[k.name]?.status === "allowed_warning") out.push({ text: "near the limit", cls: "near" });
+      const left = this.cooldown?.[k.name] || this.resetIn(k); // a cooling key waits for its cooldown instead
+      if (left) out.push({ time: duration(left), text: " until reset", cls: "" });
+      return out.filter((c) => c.text);
+    },
+
+    // seconds until the key's 5-hour window resets, 0 when unknown or already past
+    resetIn(k) {
+      const w = this.usage?.[k.name]?.["5h"];
+      return w ? Math.max(0, Math.round(w.reset - this.now / 1000)) : 0;
     },
 
     // "5h 42% · 7d 61%", beside the name on phones while the usage is folded
@@ -146,7 +155,7 @@ document.addEventListener("alpine:init", () => {
     get dlgText() {
       return {
         delete: "Removes the key and its token file.",
-        reset: "Resets the cooling down status, so every key is ready.",
+        reset: "Resets the cooling down status and the usage, so every key is ready.",
         probe: "Sends a 1-token request with every key to read its usage.",
       }[this.dlg.mode] || "";
     },
@@ -244,8 +253,9 @@ document.addEventListener("alpine:init", () => {
     },
 
     async reset() {
-      this.cooldown = await call("POST", "/cache/reset", {});
+      await call("POST", "/cache/reset", {});
       this.$refs.dlg.close();
+      await this.poll();
     },
 
     async move(from, to, focus) {

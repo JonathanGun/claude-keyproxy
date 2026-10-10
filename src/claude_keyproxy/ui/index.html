@@ -6,6 +6,7 @@
 <title>Claude Keys Manager</title>
 <link rel="icon" href="data:,">
 <link rel="stylesheet" href="/_keyproxy/pico.min.css">
+<link rel="stylesheet" href="/_keyproxy/theme.css">
 <link rel="stylesheet" href="/_keyproxy/style.css">
 <script src="/_keyproxy/app.js" defer></script>
 <script src="/_keyproxy/alpine.min.js" defer></script>
@@ -22,7 +23,7 @@
       <details class="more" x-ref="more" @click.outside="$el.open = false" @keydown.escape="$el.open = false">
         <summary role="button" class="icon outline secondary" aria-label="More options"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
         <ul>
-          <li><a href="#" @click.prevent="$refs.more.open = false; openDialog('probe')">Check usage of all keys…</a></li>
+          <li><a href="#" @click.prevent="$refs.more.open = false; openDialog('probe')">Check usage of all keys</a></li>
         </ul>
       </details>
     </span>
@@ -38,8 +39,9 @@
           <span class="pos mono" x-text="i + 1"></span>
           <span class="name"><span class="label" x-text="k.name"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span class="mini" x-text="mini(k)"></span></span>
           <span class="chips">
-            <span class="state" :class="state(k).cls" x-text="state(k).text"></span>
-            <span class="state" :class="limit(k).cls" x-text="limit(k).text"></span>
+            <template x-for="c in chips(k)" :key="c.text">
+              <span class="state" :class="c.cls"><span class="time" x-show="c.time" x-text="c.time"></span><span x-text="c.text"></span></span>
+            </template>
           </span>
           <span class="actions">
             <button type="button" class="icon outline secondary" title="New token" :aria-label="`New token for ${k.name}`"

@@ -7,14 +7,14 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 ### Added
 
 - **Check usage of all keys**, in a menu next to the refresh button. It sends a 1-token request with every key to read its usage, after a confirmation.
-- A chip for Anthropic's status: "near the limit" or "rate limited".
+- A "near the limit" chip when Anthropic warns that a key is close to its limit. A cooling key shows "rate limited" and the time left as two chips.
 - The page works on narrow screens. Each key folds into one line with its usage, and reordering works by touch.
 
 ### Changed
 
 - Reordering uses pointer events instead of HTML5 drag and drop, so it works on touch screens.
 - The last 4 characters of a token show only in the "New token" dialog. A button there opens the token file in your text editor.
-- **Reset cache** asks for confirmation first.
+- **Reset cache** asks for confirmation first, and clears the usage seen as well as the cooldowns.
 - Success messages are gone. Only errors show below the list.
 
 ## [0.1.0]

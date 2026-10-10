@@ -1,0 +1,71 @@
+/* The color theme. Change a value here to recolor the whole page: Pico.css and style.css read only these.
+   The light palette applies by default, the dark one when the system is in dark mode. */
+
+:root {
+  --bg: #fff;               /* page background */
+  --surface: #fff;          /* dialogs and menus */
+  --surface-2: #fbfcfc;     /* dialog header and footer, fields, notes */
+  --text: #373c44;
+  --muted: #646b79;         /* secondary text, outline buttons, the time chip */
+  --border: #e7eaf0;        /* row rules, menu borders, empty bars */
+  --border-strong: #cfd5e2; /* field borders */
+  --accent: #0172ad;        /* links, focus, the key in use */
+  --accent-fill: #0172ad;   /* the background of the main button */
+  --ok: #1d6a54;            /* the "ready" chip, usage bars below the warning level */
+  --warn: #a35200;          /* near the limit, cooling down, bars from 80% */
+  --danger: #883935;        /* rate limited, bars from 95%, delete, errors */
+  --on-fill: #fff;          /* text on a filled button */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #13171f;
+    --surface: #181c25;
+    --surface-2: #1a1f28;
+    --text: #c2c7d0;
+    --muted: #7b8495;
+    --border: #202632;
+    --border-strong: #2a3140;
+    --accent: #01aaff;
+    --accent-fill: #0172ad;
+    --ok: #62af9a;
+    --warn: #e3a35c;
+    --danger: #ce7e7b;
+  }
+}
+
+/* Pico's own variables, taken from the theme. :root:root outranks Pico's :root:not(...) selectors. */
+:root:root {
+  --pico-background-color: var(--bg);
+  --pico-color: var(--text);
+  --pico-h1-color: var(--text);
+  --pico-h3-color: var(--text);
+  --pico-muted-color: var(--muted);
+  --pico-muted-border-color: var(--border);
+  --pico-primary: var(--accent);
+  --pico-primary-background: var(--accent-fill);
+  --pico-primary-border: var(--accent-fill);
+  --pico-primary-hover: color-mix(in srgb, var(--accent) 70%, var(--text));
+  --pico-primary-hover-background: color-mix(in srgb, var(--accent-fill) 85%, var(--text));
+  --pico-primary-hover-border: var(--pico-primary-hover-background);
+  --pico-primary-focus: color-mix(in srgb, var(--accent) 45%, transparent);
+  --pico-primary-inverse: var(--on-fill);
+  --pico-secondary: var(--muted);
+  --pico-secondary-hover: var(--text);
+  --pico-secondary-border: var(--border-strong);
+  --pico-secondary-hover-border: var(--muted);
+  --pico-del-color: var(--danger);
+  --pico-ins-color: var(--ok);
+  --pico-card-background-color: var(--surface);
+  --pico-card-sectioning-background-color: var(--surface-2);
+  --pico-card-border-color: var(--border);
+  --pico-dropdown-background-color: var(--surface);
+  --pico-dropdown-border-color: var(--border);
+  --pico-dropdown-hover-background-color: var(--border);
+  --pico-dropdown-color: var(--text);
+  --pico-form-element-background-color: var(--surface-2);
+  --pico-form-element-border-color: var(--border-strong);
+  --pico-form-element-color: var(--text);
+  --pico-code-background-color: var(--surface-2);
+  --pico-code-color: var(--muted);
+}

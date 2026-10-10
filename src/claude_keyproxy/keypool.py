@@ -138,6 +138,12 @@ class KeyPool:
             return None
         return self.cooldowns.cool(name, resp, BAD_AUTH_COOLDOWN if bad_auth else DEFAULT_COOLDOWN)
 
+    def reset(self) -> None:
+        """Forget the cooldowns and the usage, as if no key had served a request."""
+        self.cooldowns.reset()
+        with self.lock:
+            self.usage.clear()
+
     def seen(self) -> dict[str, Usage]:
         with self.lock:
             return dict(self.usage)

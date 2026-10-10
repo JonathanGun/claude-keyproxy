@@ -67,7 +67,7 @@ If the user already has tokens and does not want the page, write them as files i
 | `src/claude_keyproxy/mcp.py` | the `keyproxy-mcp` command: an MCP server over stdin and stdout, a thin client of the key manager API |
 | `src/claude_keyproxy/setup_token.py` | runs `claude setup-token`: `Pty` drives the terminal, `find_link` and `find_token` parse its output, `Session` ties them together |
 | `src/claude_keyproxy/http_json.py` | `JsonHandler`, the base of the request handler, and the `Router` behind `@api.route` |
-| `src/claude_keyproxy/ui/` | the key manager page, shipped inside the package. Alpine.js and Pico.css are vendored and minified, never edit them |
+| `src/claude_keyproxy/ui/` | the key manager page, shipped inside the package. Every color is in `theme.css`, a light and a dark palette. Alpine.js and Pico.css are vendored and minified, never edit them |
 | `bin/` | `keyproxy-up` and `claude-keyproxy` for a clone that is not installed. They only set `PYTHONPATH` and call `cli.py` |
 | `tests/` | unit tests, one file per module. `server.py` and `http_json.py` have none, because every server test goes through them |
 | `docs/*.png` | the README screenshots |
@@ -123,7 +123,7 @@ Served by the proxy itself, from `src/manager.py`, on 127.0.0.1:18787. `--headle
 | `POST /_keyproxy/api/setup/cancel` `{"id"}` | stops a sign-in |
 | `PUT /_keyproxy/api/order` `{"order":[names]}` | sets the priority to that order |
 | `GET /_keyproxy/api/cache` | the proxy's cooldowns, seconds left per key |
-| `POST /_keyproxy/api/cache/reset` `{}` | clears the cooldowns |
+| `POST /_keyproxy/api/cache/reset` `{}` | clears the cooldowns and the usage seen |
 | `GET /_keyproxy/api/usage` | 5-hour and weekly usage per key |
 | `POST /_keyproxy/api/usage/probe` `{}` | sends a 1-token request with every subscription key, then returns the usage. It starts a 5-hour window |
 

@@ -236,7 +236,9 @@ class ManagerTest(unittest.TestCase):
         self.assertEqual(self.call("POST", "/_keyproxy/api/cache/reset", {},
                                    {"origin": "https://evil.example"})[0], 403)
         self.assertEqual(list(self.call("GET", "/_keyproxy/api/cache")[1]), ["work"])
+        self.server.pool.usage["work"] = {"status": "rejected", "5h": None, "7d": None, "seen": 0}
         self.assertEqual(self.call("POST", "/_keyproxy/api/cache/reset", {}), (200, {}))
+        self.assertEqual(self.call("GET", "/_keyproxy/api/usage")[1], {"work": None})
 
     def test_headless_keeps_only_the_read_only_calls(self):
         self.server.headless = True

@@ -14,7 +14,7 @@ POST   /_keyproxy/api/keys/<name>/open  opens the token file in the default text
                                      never passes through the API.
 PUT    /_keyproxy/api/order          {"order": [names]} sets priority 1..n in that order
 GET    /_keyproxy/api/cache          the cooldowns, {name: seconds left}
-POST   /_keyproxy/api/cache/reset    clears the cooldowns
+POST   /_keyproxy/api/cache/reset    clears the cooldowns and the usage seen
 GET    /_keyproxy/api/usage          {name: usage}: 5h and 7d utilization and reset,
                                      null before the key served a request, "n/a" for API keys
 POST   /_keyproxy/api/usage/probe    the same, after one 1-token request with every subscription key.
@@ -56,6 +56,7 @@ UI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui")
 FILES = {  # URL path -> (file in ui/, content type)
     "/": ("index.html", "text/html; charset=utf-8"),
     "/_keyproxy/pico.min.css": ("pico.min.css", "text/css; charset=utf-8"),
+    "/_keyproxy/theme.css": ("theme.css", "text/css; charset=utf-8"),
     "/_keyproxy/style.css": ("style.css", "text/css; charset=utf-8"),
     "/_keyproxy/app.js": ("app.js", "text/javascript; charset=utf-8"),
     "/_keyproxy/alpine.min.js": ("alpine.min.js", "text/javascript; charset=utf-8"),
@@ -343,7 +344,7 @@ def cooldowns(server: ProxyServer, _body: None) -> dict[str, int]:
 
 @api.route("POST", f"{API}/cache/reset")
 def reset_cooldowns(server: ProxyServer, _body: None) -> dict[str, int]:
-    server.pool.cooldowns.reset()
+    server.pool.reset()
     return server.pool.cooldowns.status()
 
 

@@ -111,7 +111,8 @@ def reorder_keys(api: Api, args: Json) -> Any:
     return api.call("PUT", "/order", {"order": args.get("order")})
 
 
-@tool("reset_cooldowns", "Make every key ready again, for example after a limit was lifted early.")
+@tool("reset_cooldowns", "Make every key ready again and forget the usage seen, for example after a limit was "
+      "lifted early.")
 def reset_cooldowns(api: Api, _args: Json) -> Any:
     return api.call("POST", "/cache/reset", {})
 

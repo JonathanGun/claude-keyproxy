@@ -1,13 +1,9 @@
-/* App-specific rules on top of Pico.css. Colors come from Pico's variables, so dark mode is free. */
+/* App-specific rules on top of Pico.css. Every color comes from theme.css. */
 
 :root {
   --pico-font-size: 93.75%; /* 15px at every width; Pico grows it up to 131% on wide screens */
   --pico-form-element-spacing-vertical: 0.5rem;
   --pico-form-element-spacing-horizontal: 0.75rem;
-  --warn: #a35200;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) { --warn: #e3a35c; }
 }
 
 main.container { max-width: 720px; padding-top: 2rem; }
@@ -57,7 +53,9 @@ li.dragging { opacity: 0.5; }
   font-weight: 600;
 }
 .state:empty { display: none; }
+.state .time { color: var(--text); }  /* the time in the "until reset" chip */
 .state.current { --tone: var(--pico-primary); }
+.state.ready { --tone: var(--ok); }
 .state.cool { --tone: var(--warn); }
 .state.missing, .state.limited { --tone: var(--pico-del-color); }
 .state.near { --tone: var(--warn); }
@@ -81,7 +79,7 @@ button.red[class], button.red[class]:is(:hover, :focus, :active) {
 }
 button.red[class]:not(.outline) {
   --pico-background-color: var(--pico-del-color);
-  --pico-color: #fff;
+  --pico-color: var(--on-fill);
 }
 button.add {
   display: flex;
@@ -189,7 +187,7 @@ dialog footer {
 .win { display: contents; }
 .pct { white-space: nowrap; text-align: right; color: var(--pico-color); font-variant-numeric: tabular-nums; }
 .bar { height: 6px; border-radius: 3px; background: var(--pico-muted-border-color); overflow: hidden; }
-.bar > span { display: block; height: 100%; width: 0; background: var(--pico-primary); }
+.bar > span { display: block; height: 100%; width: 0; background: var(--ok); }
 .bar.high > span { background: var(--warn); }
 .bar.full > span { background: var(--pico-del-color); }
 
