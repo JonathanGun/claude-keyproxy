@@ -1,0 +1,221 @@
+/* App-specific rules on top of Pico.css. Colors come from Pico's variables, so dark mode is free. */
+
+:root {
+  --pico-font-size: 93.75%; /* 15px at every width; Pico grows it up to 131% on wide screens */
+  --pico-form-element-spacing-vertical: 0.5rem;
+  --pico-form-element-spacing-horizontal: 0.75rem;
+  --warn: #a35200;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --warn: #e3a35c; }
+}
+
+main.container { max-width: 720px; padding-top: 2rem; }
+h1 { --pico-font-size: 1.5rem; margin-bottom: 1rem; }
+code { padding: 0.1rem 0.3rem; font-size: 0.85em; }
+.muted { color: var(--pico-muted-color); }
+
+/* one key per line, separated by thin rules */
+ol.keys {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1rem;
+  border-top: 1px solid var(--pico-muted-border-color);
+}
+.keys > li {
+  padding: 0.6rem 0.5rem;
+  border-bottom: 1px solid var(--pico-muted-border-color);
+}
+li.dragging { opacity: 0.5; }
+/* the key the proxy uses now: a tinted row with a bar on the left, and an "in use" pill */
+.keys > li.current {
+  background: color-mix(in srgb, var(--pico-primary) 7%, transparent);
+  box-shadow: inset 3px 0 var(--pico-primary);
+}
+.keys > li.over { box-shadow: inset 0 2px var(--pico-primary); }  /* after .current, so the drop line wins */
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+.keys .row { cursor: grab; user-select: none; }
+.keys:has(li.dragging), .keys:has(li.dragging) .row { cursor: grabbing; }
+.pos { width: 1.25em; text-align: right; color: var(--pico-muted-color); }
+.name { font-weight: 600; }
+.chev, .mini { display: none; }
+
+/* every state is the same pill, tinted in its own color */
+.state {
+  --tone: var(--pico-muted-color);
+  padding: 0.05rem 0.5rem;
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--tone) 16%, transparent);
+  color: var(--tone);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+.state:empty { display: none; }
+.state.current { --tone: var(--pico-primary); }
+.state.cool { --tone: var(--warn); }
+.state.missing, .state.limited { --tone: var(--pico-del-color); }
+.state.near { --tone: var(--warn); }
+.chips { display: flex; gap: 0.35rem; }
+.actions { margin-left: auto; display: flex; gap: 0.35rem; }
+
+/* buttons: compact everywhere, icon ones square */
+button, button[type] {  /* [type] to outrank Pico's attribute selectors */
+  width: auto;
+  margin: 0;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.875rem;
+}
+button.icon { padding: 0.35rem; line-height: 0; }
+button svg { width: 1rem; height: 1rem; flex: none; }
+button.handle { border-color: transparent; cursor: grab; touch-action: none; }  /* a drag, not a scroll */
+/* [class] and :is() to outrank Pico's .outline rules, hover included */
+button.red[class], button.red[class]:is(:hover, :focus, :active) {
+  --pico-color: var(--pico-del-color);
+  --pico-border-color: var(--pico-del-color);
+}
+button.red[class]:not(.outline) {
+  --pico-background-color: var(--pico-del-color);
+  --pico-color: #fff;
+}
+button.add {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.6rem 0.8rem;
+  border-style: dashed;
+}
+/* a text link that is a button: no fill or border in any state, Pico's :hover rule included */
+button.link[class], button.link[class]:is(:hover, :focus, :active) {
+  --pico-background-color: transparent;
+  --pico-border-color: transparent;
+  --pico-color: var(--pico-primary);
+  --pico-box-shadow: none;
+  padding-inline: 0;
+  margin-right: auto;
+}
+button.link[class]:hover { --pico-color: var(--pico-primary-hover); text-decoration: underline; text-underline-offset: 3px; }
+button.link[class]:focus-visible { outline: 2px solid var(--pico-primary-focus); outline-offset: 2px; }
+svg {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* fields */
+label:has(:required) > span::after { content: " *"; color: var(--pico-del-color); }
+label { display: grid; gap: 0.3rem; margin: 0; font-size: 0.875rem; font-weight: 500; }
+input:not([type="checkbox"], [type="radio"]) { margin: 0; font-size: 0.9375rem; }  /* :not() to outrank Pico's margin */
+
+/* the dialog: one form, its footer bar matches Pico's article footer */
+dialog article { max-width: 28rem; padding: 1.25rem; }
+dialog article > header { padding-block: 0.8rem; }
+dialog h3 { --pico-font-size: 1.05rem; }
+dialog form { display: grid; gap: 1rem; margin: 0; }
+dialog form > div { display: grid; gap: 1rem; }
+dialog p { margin: 0; font-size: 0.9375rem; }
+dialog p.warn { color: var(--warn); }
+/* the current token, masked, with a button that opens its file */
+dialog form > div.token { display: flex; align-items: center; gap: 0.5rem; }
+dialog .token code { flex: 1; padding: 0.45rem 0.6rem; font-size: 0.875rem; letter-spacing: 0.05em; }
+dialog .note {
+  display: flex;
+  gap: 0.5rem;
+  align-items: start;
+  padding: 0.6rem 0.75rem;
+  border-radius: var(--pico-border-radius);
+  background: var(--pico-card-sectioning-background-color);
+  color: var(--pico-muted-color);
+  font-size: 0.8125rem;
+}
+dialog .note svg { width: 1rem; height: 1rem; flex: none; margin-top: 0.05rem; }
+button.wide[type] { width: 100%; }
+dialog output.err { font-size: 0.875rem; color: var(--pico-del-color); }
+dialog footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin: 0.25rem -1.25rem -1.25rem;
+  padding: 0.8rem 1.25rem;
+  border-top: var(--pico-border-width) solid var(--pico-card-border-color);
+  background: var(--pico-card-sectioning-background-color);
+}
+
+#poll { justify-content: flex-end; font-size: 0.8125rem; color: var(--pico-muted-color); margin-bottom: 0.5rem; }
+/* refresh, and a chevron that opens the "check usage" menu, joined as one button */
+#poll .split { display: inline-flex; }
+#poll .split > button { border-start-end-radius: 0; border-end-end-radius: 0; }
+#poll .more { position: relative; margin: 0; }
+#poll .more > summary[class] {
+  display: block; margin: 0 0 0 -1px; padding: 0.35rem 0.15rem; line-height: 0; list-style: none;
+  border-start-start-radius: 0; border-end-start-radius: 0;
+}
+#poll .more > summary::after, #poll .more > summary::-webkit-details-marker { display: none; }
+#poll .more > summary svg { width: 0.85rem; height: 1rem; }
+#poll .more ul {
+  position: absolute; z-index: 10; top: calc(100% + 0.25rem); right: 0;
+  margin: 0; padding: 0.25rem; white-space: nowrap; font-size: 0.875rem;
+  background: var(--pico-dropdown-background-color); color: var(--pico-dropdown-color);
+  border: var(--pico-border-width) solid var(--pico-dropdown-border-color);
+  border-radius: var(--pico-border-radius); box-shadow: var(--pico-dropdown-box-shadow);
+}
+#poll .more li { margin: 0; padding: 0; list-style: none; }
+#poll .more a { display: block; padding: 0.4rem 0.75rem; border-radius: var(--pico-border-radius);
+  color: inherit; text-decoration: none; }
+#poll .more a:is(:hover, :focus-visible) { background: var(--pico-dropdown-hover-background-color); }
+#reset { margin: 0; }
+#msg { display: block; min-height: 1.5em; margin-top: 0.75rem; font-size: 0.8125rem; color: var(--pico-del-color); }
+
+/* usage: label, bar, percent, reset time; the note spans the full width */
+.usage {
+  display: grid;
+  grid-template-columns: 4em minmax(60px, 1fr) 3.5em auto;
+  gap: 0.2rem 0.6rem;
+  align-items: center;
+  margin: 0.4rem 0 0 calc(1.7rem + 1.25em + 1.2rem);
+  font-size: 0.8125rem;
+  color: var(--pico-muted-color);
+}
+.usage .note { grid-column: 1 / -1; }
+.win { display: contents; }
+.pct { white-space: nowrap; text-align: right; color: var(--pico-color); font-variant-numeric: tabular-nums; }
+.bar { height: 6px; border-radius: 3px; background: var(--pico-muted-border-color); overflow: hidden; }
+.bar > span { display: block; height: 100%; width: 0; background: var(--pico-primary); }
+.bar.high > span { background: var(--warn); }
+.bar.full > span { background: var(--pico-del-color); }
+
+/* phones: usage uses the full width, bigger tap targets, the dialog footer wraps */
+@media (max-width: 560px) {
+  main.container { padding-top: 1rem; }
+  .row { gap: 0.4rem; }
+  /* name and buttons on the first line, the state pill under the name */
+  .keys .row { display: grid; grid-template-columns: auto auto minmax(0, 1fr) auto; row-gap: 0.15rem; }
+  .keys .row .chips { grid-area: 2 / 3; justify-self: start; }
+  .keys .row .actions { grid-row: span 2; }
+  .name { display: flex; align-items: center; min-width: 0; }
+  .name .label { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  li:not(.open) .mini {
+    display: inline; flex: none; margin-left: 0.5rem;
+    font-size: 0.75rem; font-weight: 400; color: var(--pico-muted-color); font-variant-numeric: tabular-nums;
+  }
+  /* usage is folded away until the row is tapped */
+  .keys > li:not(.open) .usage { display: none; }
+  .chev { display: inline; flex: none; width: 0.9rem; height: 0.9rem; margin-left: 0.3rem; color: var(--pico-muted-color); }
+  li.open .chev { transform: rotate(180deg); }
+  .keys > li { padding-inline: 0.25rem; }
+  button.icon[type], #poll .more > summary[class] { padding: 0.55rem; }
+  #poll .more > summary[class] { padding-inline: 0.3rem; }
+  .usage { grid-template-columns: 3.6em minmax(40px, 1fr) 3em auto; gap: 0.2rem 0.5rem; margin-left: 0.25rem; }
+  dialog footer { flex-wrap: wrap; }
+}
+
+[x-cloak] { display: none !important; }

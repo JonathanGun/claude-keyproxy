@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.egg-info/
+build/
+dist/
+.venv/
+
+# tool caches
+.mypy_cache/
+.ruff_cache/
+
+# local keys and editor settings, never committed
+*.key
+index.json
+!examples/index.json
+.picked
+.vscode/

@@ -1,0 +1,6 @@
+{
+  "keys": [
+    { "priority": 1, "name": "work", "path": "~/.config/claude/keys/work.key" },
+    { "priority": 2, "name": "personal", "path": "~/.config/claude/keys/personal.key" }
+  ]
+}

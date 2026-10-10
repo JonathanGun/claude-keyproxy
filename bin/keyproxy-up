@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# keyproxy-up from a clone that is not installed. Installed with uv or pipx, keyproxy-up is on PATH already.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" exec python3 -c \
+  'import sys; from claude_keyproxy.cli import up; sys.exit(up())' "$@"

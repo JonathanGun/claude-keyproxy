@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Claude Keys Manager</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/_keyproxy/pico.min.css">
+<link rel="stylesheet" href="/_keyproxy/style.css">
+<script src="/_keyproxy/app.js" defer></script>
+<script src="/_keyproxy/alpine.min.js" defer></script>
+</head>
+<body>
+<main class="container" x-data="keys" x-cloak>
+  <h1>Claude Keys Manager</h1>
+
+  <div id="poll" class="row">
+    <span :aria-busy="busy"></span>
+    <output x-text="updatedText"></output>
+    <span class="split">
+      <button class="icon outline secondary" type="button" aria-label="Refresh now" title="Refresh now" :disabled="busy" @click="poll()"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg></button>
+      <details class="more" x-ref="more" @click.outside="$el.open = false" @keydown.escape="$el.open = false">
+        <summary role="button" class="icon outline secondary" aria-label="More options"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg></summary>
+        <ul>
+          <li><a href="#" @click.prevent="$refs.more.open = false; openDialog('probe')">Check usage of all keys…</a></li>
+        </ul>
+      </details>
+    </span>
+  </div>
+
+  <ol class="keys" aria-label="Keys by priority">
+    <li x-show="!keys.length">No keys yet.</li>
+
+    <template x-for="(k, i) in keys" :key="k.name">
+      <li :data-i="i" :class="{ dragging: dragFrom === i, over: over === i, current: k.name === current, open: expanded[k.name] }">
+        <div class="row" @pointerdown="grab($event, i)" @click="if (!$event.target.closest('button')) expanded[k.name] = !expanded[k.name]">
+          <button type="button" class="icon handle outline secondary" :aria-label="`Reorder ${k.name}`" @keydown="key($event, i)"><svg viewBox="0 0 24 24" aria-hidden="true"><g fill="currentColor" stroke="none"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></g></svg></button>
+          <span class="pos mono" x-text="i + 1"></span>
+          <span class="name"><span class="label" x-text="k.name"></span><svg class="chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6"/></svg><span class="mini" x-text="mini(k)"></span></span>
+          <span class="chips">
+            <span class="state" :class="state(k).cls" x-text="state(k).text"></span>
+            <span class="state" :class="limit(k).cls" x-text="limit(k).text"></span>
+          </span>
+          <span class="actions">
+            <button type="button" class="icon outline secondary" title="New token" :aria-label="`New token for ${k.name}`"
+                    @click="openDialog('replace', k.name)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+            <button type="button" class="icon red outline" :title="`Delete ${k.name}`" :aria-label="`Delete ${k.name}`"
+                    @click="openDialog('delete', k.name)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/></svg></button>
+          </span>
+        </div>
+
+        <template x-if="usage">
+          <div class="usage">
+            <template x-for="b in quota(k).bars" :key="b.label">
+              <div class="win">
+                <span x-text="b.label"></span>
+                <span class="bar" :class="{ high: b.n >= 80, full: b.n >= 95 }"
+                      :role="b.n == null ? null : 'meter'" aria-valuemin="0" aria-valuemax="100"
+                      :aria-valuenow="b.n" :aria-label="`${b.label} usage of ${k.name}`"><span :style="{ width: Math.min(b.n ?? 0, 100) + '%' }"></span></span>
+                <span class="pct" x-text="b.pct"></span>
+                <span x-text="b.reset"></span>
+              </div>
+            </template>
+            <span class="note" x-show="quota(k).note" x-text="quota(k).note"></span>
+          </div>
+        </template>
+
+      </li>
+    </template>
+
+    <li id="add-row">
+      <button type="button" class="add outline secondary" aria-label="Add a new key" @click="openDialog('add')"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>Add a new key</button>
+    </li>
+  </ol>
+
+  <button id="reset" type="button" class="red outline" @click="openDialog('reset')">Reset cache</button>
+  <output id="msg" x-text="msg"></output>
+
+  <dialog x-ref="dlg" @close="abort()">
+    <article>
+      <header>
+        <button type="button" aria-label="Close" rel="prev" @click="$refs.dlg.close()"></button>
+        <h3 x-text="dlgTitle">Key</h3>
+      </header>
+
+      <form autocomplete="off" @submit.prevent="submit()">
+        <p class="muted" x-show="dlgText" x-text="dlgText"></p>
+        <div class="token" x-show="dlg.mode === 'replace' && dlg.step === 'confirm' && dlgToken">
+          <code x-text="dlgToken"></code>
+          <button type="button" class="outline secondary" @click="openFile()">Open in editor</button>
+        </div>
+        <p class="warn" x-show="dlg.mode === 'probe'"><strong>It will start the 5-hour limit immediately.</strong></p>
+
+        <label x-show="dlg.mode === 'add' && dlg.step === 'confirm'"><span>Name</span>
+          <input x-model="dlg.name" :required="dlg.mode === 'add'" pattern="[A-Za-z0-9._\-]+" placeholder="e.g. personal">
+        </label>
+        <label x-show="dlg.paste"><span>Token</span>
+          <input type="password" x-model="dlg.token" :required="dlg.paste" minlength="8" placeholder="sk-ant-…">
+        </label>
+        <p class="note" x-show="signing && !dlg.paste && dlg.step === 'confirm'"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><span>Runs <code>claude setup-token</code> on this Mac. The code and token stay here.</span></p>
+
+        <div x-show="dlg.step === 'code'">
+          <button type="button" class="outline secondary wide" @click="window.open(dlg.url, '_blank', 'noopener,noreferrer')">Open the sign-in page</button>
+          <label><span>Code from that page</span>
+            <input name="code" x-model="dlg.code" :required="dlg.step === 'code'" minlength="8">
+          </label>
+        </div>
+
+        <output class="err" x-show="dlg.error" x-text="dlg.error"></output>
+
+        <footer>
+          <button type="button" class="link" x-show="signing && dlg.step === 'confirm'"
+                  @click="dlg.paste = !dlg.paste; dlg.error = ''; focusDialog()" x-text="dlg.paste ? 'Sign in instead' : 'Paste a token instead'"></button>
+          <button type="button" class="outline secondary" @click="$refs.dlg.close()">Cancel</button>
+          <button :class="{ red: dlg.mode === 'delete' || dlg.mode === 'reset' }" :aria-busy="dlg.busy" :disabled="dlg.busy" x-text="dlgAction"></button>
+        </footer>
+      </form>
+    </article>
+  </dialog>
+</main>
+</body>
+</html>

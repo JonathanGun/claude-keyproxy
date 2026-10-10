@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# claude-keyproxy from a clone that is not installed. Installed with uv or pipx, it is on PATH already.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" exec python3 -c \
+  'import sys; from claude_keyproxy.cli import claude; sys.exit(claude())' "$@"
