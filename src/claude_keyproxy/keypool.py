@@ -87,6 +87,11 @@ class Cooldowns:
         with self.lock:
             self.until.clear()
 
+    def clear(self, name: str) -> None:
+        """Forget one key's cooldown, so a disabled key stops showing as cooling."""
+        with self.lock:
+            self.until.pop(name, None)
+
 
 class KeyPool:
     """The keys from index.json, their cooldowns, and the usage each one last reported.
@@ -145,6 +150,11 @@ class KeyPool:
         self.cooldowns.reset()
         with self.lock:
             self.usage.clear()
+
+    def forget(self, name: str) -> None:
+        """Drop the usage of one key, so a disabled key stops showing it."""
+        with self.lock:
+            self.usage.pop(name, None)
 
     def seen(self) -> dict[str, Usage]:
         with self.lock:

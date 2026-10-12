@@ -213,9 +213,13 @@ class ManagerTest(unittest.TestCase):
 
     def test_disable_skips_the_key_until_it_is_turned_back_on(self):
         self.assertEqual([k.name for k in self.server.pool.load()], ["work"])
+        self.server.pool.cooldowns.until["work"] = self.server.pool.cooldowns.clock() + 120
+        self.server.pool.usage["work"] = {"status": "allowed"}
         status, keys = self.call("PUT", "/_keyproxy/api/keys/work/disabled", {"disabled": True})
         self.assertEqual((status, keys[0]["disabled"]), (200, True))
         self.assertEqual(self.server.pool.load(), [])
+        self.assertNotIn("work", self.server.pool.cooldowns.status())
+        self.assertNotIn("work", self.server.pool.seen())
         status, keys = self.call("PUT", "/_keyproxy/api/keys/work/disabled", {"disabled": False})
         self.assertEqual((status, keys[0]["disabled"]), (200, False))
         self.assertEqual([k.name for k in self.server.pool.load()], ["work"])

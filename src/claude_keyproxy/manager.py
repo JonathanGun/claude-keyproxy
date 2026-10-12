@@ -349,6 +349,9 @@ def set_disabled(server: ProxyServer, body: Json, name: str) -> list[Json]:
     if not isinstance(body.get("disabled"), bool):
         raise BadRequest("disabled must be true or false")
     server.keys.set_disabled(name, body["disabled"])
+    if body["disabled"]:
+        server.pool.cooldowns.clear(name)
+        server.pool.forget(name)
     return server.keys.all()
 
 
