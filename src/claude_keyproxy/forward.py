@@ -121,6 +121,7 @@ class Handler(JsonHandler):
 
     def try_key(self, key: Key, body: bytes, last: bool) -> bool:
         """Send the request with one key. False means: try the next key."""
+        log(key.name, self.command, self.path, "start")
         conn = self.server.connect(self.server.target.netloc, timeout=600)
         try:
             conn.request(self.command, self.path, body, self.upstream_headers(key.token))
@@ -151,13 +152,13 @@ class Handler(JsonHandler):
         return True
 
     def relay(self, resp: HTTPResponse) -> None:
-        self.send_response_only(resp.status, resp.reason)
-        for k, v in resp.getheaders():
-            if k.lower() not in RESPONSE_DROP:
-                self.send_header(k, v)
-        self.send_header("Connection", "close")
-        self.end_headers()
         try:
+            self.send_response_only(resp.status, resp.reason)
+            for k, v in resp.getheaders():
+                if k.lower() not in RESPONSE_DROP:
+                    self.send_header(k, v)
+            self.send_header("Connection", "close")
+            self.end_headers()
             while chunk := resp.read1(65536):  # read1 returns as data arrives, so SSE streams live
                 self.wfile.write(chunk)
                 self.wfile.flush()
