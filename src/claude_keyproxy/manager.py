@@ -57,6 +57,7 @@ API = "/_keyproxy/api"
 UI_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "ui")
 FILES = {  # URL path -> (file in ui/, content type)
     "/": ("index.html", "text/html; charset=utf-8"),
+    "/_keyproxy/favicon.svg": ("favicon.svg", "image/svg+xml"),
     "/_keyproxy/pico.min.css": ("pico.min.css", "text/css; charset=utf-8"),
     "/_keyproxy/theme.css": ("theme.css", "text/css; charset=utf-8"),
     "/_keyproxy/style.css": ("style.css", "text/css; charset=utf-8"),
