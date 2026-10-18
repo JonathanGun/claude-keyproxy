@@ -124,6 +124,8 @@ Each key has priority. It will be used sequentially based on priority. A key tha
 
 The log is at `~/.cache/keyproxy.log`.
 
+The [guide](docs/guide.md) explains the key rotation, the cooldowns and every action on the key manager page.
+
 ## Config
 
 Config is stored in `~/.config/claude/` by default.
