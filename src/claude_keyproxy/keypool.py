@@ -136,10 +136,10 @@ class KeyPool:
                 self.usage[name] = usage
 
     def observe(self, name: str, resp: HTTPResponse) -> int | None:
-        """Record the key's usage, and cool it down if it is limited or its token was rejected.
-        Returns the cooldown in seconds, or None when the key is fine."""
+        """Record the key's usage, and cool it down if it is limited, its token was rejected,
+        or its organization blocks OAuth (403). Returns the cooldown in seconds, or None when the key is fine."""
         self.record(name, resp)
-        bad_auth = resp.status == 401
+        bad_auth = resp.status in (401, 403)
         limited = resp.status == 429 or resp.getheader("anthropic-ratelimit-unified-status") == "rejected"
         if not (limited or bad_auth):
             return None

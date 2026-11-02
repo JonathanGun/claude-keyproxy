@@ -18,6 +18,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and
 - **Reset cache** asks for confirmation first, and clears the usage seen as well as the cooldowns.
 - Success messages are gone. Only errors show below the list.
 
+### Fixed
+
+- A key whose organization has disabled Claude Code access (a 403 from Anthropic) no longer stops the request. The proxy cools that key down and tries the next one, like an expired token.
+
 ## [0.1.0]
 
 ### Added

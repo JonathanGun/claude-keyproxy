@@ -18,10 +18,11 @@ opener = urllib.request.build_opener(urllib.request.ProxyHandler({}))
 
 
 class FakeAnthropic:
-    """Upstream stand-in. Tokens in `limited` get a 429, the others get a 200 stream."""
+    """Upstream stand-in. Tokens in `limited` get a 429, tokens in `forbidden` a 403, the others a 200 stream."""
 
     def __init__(self):
         self.limited = set()
+        self.forbidden = set()
         self.seen = []  # (token, anthropic-beta) per request
         self.api_keys = []  # x-api-key per request
         self.bodies = []  # request body per request
@@ -41,6 +42,14 @@ class FakeAnthropic:
                     self.send_header("anthropic-ratelimit-unified-reset", str(int(time.time()) + 60))
                     self.send_header("content-length", "0")
                     self.end_headers()
+                    return
+                if token in outer.forbidden:
+                    body = b'{"type":"error","error":{"type":"permission_error","message":"OAuth not allowed."}}'
+                    self.send_response(403)
+                    self.send_header("content-type", "application/json")
+                    self.send_header("content-length", str(len(body)))
+                    self.end_headers()
+                    self.wfile.write(body)
                     return
                 self.send_response(200)
                 self.send_header("content-type", "text/event-stream")
@@ -125,6 +134,13 @@ class ForwardTest(unittest.TestCase):
             status = json.load(resp)
         self.assertIn("first", status)
         self.assertNotIn("second", status)
+
+    def test_fails_over_when_the_organization_blocks_a_key(self):
+        self.upstream.forbidden.add("token-first")
+        self.assertEqual(self.post().status, 200)
+        self.assertEqual([t for t, _ in self.upstream.seen], ["token-first", "token-second"])
+        with opener.open(f"{self.base}/_keyproxy/api/cache") as resp:
+            self.assertIn("first", json.load(resp))
 
     def test_returns_the_429_when_every_key_is_limited(self):
         self.upstream.limited.update({"token-first", "token-second"})
